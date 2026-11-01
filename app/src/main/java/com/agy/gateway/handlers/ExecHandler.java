@@ -72,11 +72,44 @@ public final class ExecHandler {
         String status = "ERROR";
 
         try {
+            String home = context.getFilesDir().getAbsolutePath();
+            String prefix = home + "/usr";
+
+            File binDir = new File(prefix, "bin");
+            if (binDir.isDirectory()) {
+                File[] binFiles = binDir.listFiles();
+                if (binFiles != null) {
+                    for (File f : binFiles) {
+                        if (!f.canExecute()) {
+                            f.setExecutable(true, false);
+                        }
+                    }
+                }
+            }
+            File tmpDir = new File(prefix, "tmp");
+            if (!tmpDir.exists()) {
+                tmpDir.mkdirs();
+            }
+
+            File usrBash = new File(prefix, "bin/bash");
+            File usrSh = new File(prefix, "bin/sh");
+            String shell = "/system/bin/sh";
+            if (usrBash.canExecute() || (usrBash.exists() && usrBash.setExecutable(true, false))) {
+                shell = usrBash.getAbsolutePath();
+            } else if (usrSh.canExecute() || (usrSh.exists() && usrSh.setExecutable(true, false))) {
+                shell = usrSh.getAbsolutePath();
+            }
+
+            File envScript = new File(prefix, "etc/profile.d/00-env.sh");
+            String fullCmd = envScript.isFile()
+                    ? ". \"" + envScript.getAbsolutePath() + "\" 2>/dev/null || true; " + cmd
+                    : cmd;
+
             ProcessBuilder pb;
             if (useRish) {
-                pb = new ProcessBuilder(resolveRishPath(), "-c", cmd);
+                pb = new ProcessBuilder(resolveRishPath(), "-c", fullCmd);
             } else {
-                pb = new ProcessBuilder("/system/bin/sh", "-c", cmd);
+                pb = new ProcessBuilder(shell, "-c", fullCmd);
             }
 
             File cwd = new File(cwdPath);
@@ -84,11 +117,16 @@ public final class ExecHandler {
                 pb.directory(cwd);
             }
 
-            String home = context.getFilesDir().getAbsolutePath();
             pb.environment().put("HOME", home);
-            pb.environment().put("PATH", home + "/usr/bin:" + home + "/runtime/bin:/system/bin:" + System.getenv("PATH"));
+            pb.environment().put("PREFIX", prefix);
+            pb.environment().put("TMPDIR", prefix + "/tmp");
+            pb.environment().put("PATH", prefix + "/bin:" + home + "/runtime/bin:/system/bin:" + System.getenv("PATH"));
+            pb.environment().put("LD_LIBRARY_PATH", prefix + "/lib");
+            File preload = new File(prefix, "lib/libtermux-exec.so");
+            if (preload.isFile()) {
+                pb.environment().put("LD_PRELOAD", preload.getAbsolutePath());
+            }
             pb.environment().put("RISH_APPLICATION_ID", context.getPackageName());
-            pb.environment().remove("LD_LIBRARY_PATH");
 
             Process proc = pb.start();
 

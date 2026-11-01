@@ -1,7 +1,8 @@
 # 00-env.sh -- core environment of the tlx prefix.
 export HOME="${HOME:-$(dirname "$PREFIX")}"
 export TMPDIR="$PREFIX/tmp"
-export PATH="$PREFIX/bin"
+export PATH="$PREFIX/bin:$PATH"
+alias run="agy-exec"
 export LD_LIBRARY_PATH="$PREFIX/lib"
 if [ -f "$PREFIX/lib/liblse_compat.so" ]; then
     export LD_PRELOAD="$PREFIX/lib/liblse_compat.so:$PREFIX/lib/libtermux-exec.so"

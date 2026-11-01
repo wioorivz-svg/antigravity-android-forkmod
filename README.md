@@ -39,6 +39,8 @@ No PRoot, chroot, or virtualization overhead. Antigravity runs **bare-metal insi
 
 ### Highlights in v2.4
 
+* **Direct Downloads Storage Integration:** Direct workspace mapping to `/storage/emulated/0/Download`. Models and tools can inspect, author, and compile projects directly in shared device storage without sandboxing friction.
+* **Transparent Kernel `noexec` Bypass:** High-performance freestanding native hook (`libtermux-exec.so`) seamlessly stages binaries compiled on `noexec` Android storage partitions to execute bare-metal without PRoot, chroot, or permission errors (`EACCES`).
 * **Modular Core:** Clean separation into 6 standalone subsystems (`modules/*`) with independent test suites.
 * **Native Splash:** Canvas-based dot animation saving ~40 MB RAM with instant startup.
 * **Desktop Mode:** Instant toggle in Appearance settings for tablets, external keyboards, and Samsung DeX.
@@ -107,6 +109,13 @@ antigravity/
 
 > [!TIP]
 > Each module in `modules/`, `app/`, `web/`, and `env/` includes its own dedicated `README.md` with in-depth technical documentation.
+
+---
+
+### Credits & Acknowledgements
+
+* **Original Creator & Contributors:** Core Antigravity for Android architecture, runtime patches, and ecosystem.
+* **[wio (@wioorivz-svg)](https://github.com/wioorivz-svg):** Implementation of direct user storage integration (`/storage/emulated/0/Download`), allowing AI models and native tools to interact seamlessly with external storage, along with bare-metal transparent execution bypass for Android kernel `noexec` (`MNT_NOEXEC`).
 
 ---
 
